@@ -7,10 +7,17 @@ A system power management plugin for DankMaterialShell launcher.
 - **Actions**: Shutdown, Reboot, Suspend, Logout, Lock.
 - **Safe**: Standard systemd/loginctl commands.
 
+## Requirements
+- **None**: Uses standard system commands (`systemctl`, `loginctl`).
+
 ## Installation
-Copy or symlink the `powermenu` directory to your DMS plugins folder:
+
+Assuming you have cloned the [dms-plugins](https://github.com/pcortellezzi/dms-plugins) repository:
+
 ```bash
-ln -s $(pwd)/powermenu ~/.config/DankMaterialShell/plugins/
+mkdir -p ~/.config/DankMaterialShell/plugins
+ln -s /path/to/dms-plugins/powermenu ~/.config/DankMaterialShell/plugins/
+dms restart
 ```
 
 ## Configuration
