@@ -1,0 +1,63 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - '*-v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v25
+
+      - name: Extract Plugin Info
+        id: info
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          # Tag format expected: pluginname-v1.2.3
+          PLUGIN_NAME=$(echo $TAG | sed 's/-v.*//')
+          VERSION=$(echo $TAG | sed 's/.*-v//')
+          echo "plugin_name=$PLUGIN_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Prepare Zip
+        run: |
+          PLUGIN_NAME=${{ steps.info.outputs.plugin_name }}
+          zip -r ${PLUGIN_NAME}.zip ${PLUGIN_NAME}
+
+      - name: Calculate Nix SRI Hash
+        id: hash
+        run: |
+          PLUGIN_NAME=${{ steps.info.outputs.plugin_name }}
+          # Get the SRI hash of the directory content
+          HASH=$(nix-hash --type sha256 --sri ${PLUGIN_NAME})
+          echo "sri=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.info.outputs.plugin_name }}.zip
+          tag_name: ${{ steps.info.outputs.tag }}
+          name: Release ${{ steps.info.outputs.plugin_name }} v${{ steps.info.outputs.version }}
+          body: |
+            ## NixOS Configuration (Home Manager)
+            
+            Add this to your `home.nix` or DMS configuration:
+            
+            ```nix
+            programs.dank-material-shell.plugins.${{ steps.info.outputs.plugin_name }} = {
+              enable = true;
+              src = pkgs.fetchzip {
+                url = "https://github.com/pcortellezzi/dms_plugins/releases/download/${{ steps.info.outputs.tag }}/${{ steps.info.outputs.plugin_name }}.zip";
+                sha256 = "${{ steps.hash.outputs.sri }}";
+              };
+            };
+            ```

@@ -20,5 +20,17 @@ ln -s /path/to/dms-plugins/powermenu ~/.config/DankMaterialShell/plugins/
 dms restart
 ```
 
+### NixOS (Home Manager with dms module)
+
+```nix
+programs.dank-material-shell.plugins.powermenu = {
+  enable = true;
+  src = pkgs.fetchzip {
+    url = "https://github.com/pcortellezzi/dms_plugins/releases/download/powermenu-v1.0.0/powermenu.zip";
+    sha256 = lib.fakeSha256; # Replace with the hash provided in the GitHub Release notes
+  };
+};
+```
+
 ## Configuration
 - **Trigger**: Default is `power`. Customizable in settings.

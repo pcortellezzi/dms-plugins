@@ -21,5 +21,17 @@ ln -s /path/to/dms-plugins/qalculate ~/.config/DankMaterialShell/plugins/
 dms restart
 ```
 
+### NixOS (Home Manager with dms module)
+
+```nix
+programs.dank-material-shell.plugins.qalculate = {
+  enable = true;
+  src = pkgs.fetchzip {
+    url = "https://github.com/pcortellezzi/dms_plugins/releases/download/qalculate-v1.0.0/qalculate.zip";
+    sha256 = lib.fakeSha256; # Replace with the hash provided in the GitHub Release notes
+  };
+};
+```
+
 ## Configuration
 - **Trigger**: Default is `=`. Customizable in settings.
