@@ -11,3 +11,4 @@ Until these changes are merged into the official repository, please use [Philipp
 | Plugin | Description |
 | --- | --- |
 | [Qalculate](./qalculate) | Powerful calculator using `qalc`. |
+| [Powermenu](./powermenu) | System power management actions (Shutdown, Reboot, Lock, etc.). |
