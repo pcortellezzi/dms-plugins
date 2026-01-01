@@ -1,0 +1,10 @@
+# Logs
+*.log
+
+# Editor backups
+*~
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
