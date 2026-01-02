@@ -3,7 +3,7 @@ name: Release Plugin
 on:
   push:
     tags:
-      - '*-v*'
+      - "*-v*"
 
 jobs:
   release:
@@ -49,15 +49,74 @@ jobs:
           name: Release ${{ steps.info.outputs.plugin_name }} v${{ steps.info.outputs.version }}
           body: |
             ## NixOS Configuration (Home Manager)
-            
+
             Add this to your `home.nix` or DMS configuration:
-            
+
             ```nix
             programs.dank-material-shell.plugins.${{ steps.info.outputs.plugin_name }} = {
               enable = true;
               src = pkgs.fetchzip {
-                url = "https://github.com/pcortellezzi/dms_plugins/releases/download/${{ steps.info.outputs.tag }}/${{ steps.info.outputs.plugin_name }}.zip";
+                url = "https://github.com/pcortellezzi/dms-plugins/releases/download/${{ steps.info.outputs.tag }}/${{ steps.info.outputs.plugin_name }}.zip";
                 sha256 = "${{ steps.hash.outputs.sri }}";
               };
             };
             ```
+
+      - name: Update NixOS Config
+        env:
+          CONFIG_TOKEN: ${{ secrets.PAT }}
+          PLUGIN_NAME: ${{ steps.info.outputs.plugin_name }}
+          NEW_TAG: ${{ steps.info.outputs.tag }}
+          NEW_HASH: ${{ steps.hash.outputs.sri }}
+        run: |
+          if [ -z "$CONFIG_TOKEN" ]; then
+            echo "PAT secret not found, skipping config update."
+            exit 0
+          fi
+
+          git clone https://x-access-token:${CONFIG_TOKEN}@github.com/pcortellezzi/nixos-config.git
+          cd nixos-config
+
+          FILE="home/philippe/niri+dms.nix"
+
+          # Use python for a more reliable multi-line replacement
+          python3 <<EOF
+          import re
+          import os
+
+          plugin = os.environ['PLUGIN_NAME']
+          tag = os.environ['NEW_TAG']
+          hash_val = os.environ['NEW_HASH']
+          file_path = '$FILE'
+
+          with open(file_path, 'r') as f:
+              content = f.read()
+
+          # Pattern to match the specific plugin block and its src/fetchzip content
+          # This looks for: plugin_name = { ... src = pkgs.fetchzip { ... } ... }
+          pattern = r'(' + plugin + r'\s*=\s*\{.*?\bsrc\s*=\s*pkgs\.fetchzip\s*\{)(.*?)(\};)'
+
+          def replace_block(match):
+              prefix = match.group(1)
+              old_inner = match.group(2)
+              suffix = match.group(3)
+
+              # Update URL and SHA256 inside the fetchzip block
+              new_url = f'\n          url = "https://github.com/pcortellezzi/dms-plugins/releases/download/{tag}/{plugin}.zip";'
+              new_hash = f'\n          sha256 = "{hash_val}";\n        '
+              return prefix + new_url + new_hash + suffix
+
+          new_content = re.sub(pattern, replace_block, content, flags=re.DOTALL)
+
+          # Also fix the general repo URL typo if present (dms_plugins -> dms-plugins)
+          new_content = new_content.replace('dms_plugins', 'dms-plugins')
+
+          with open(file_path, 'w') as f:
+              f.write(new_content)
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add $FILE
+          git commit -m "chore(dms): bump $PLUGIN_NAME to $NEW_TAG"
+          git push
