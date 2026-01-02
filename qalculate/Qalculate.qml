@@ -4,12 +4,25 @@ import qs.Common
 import qs.Services
 import "."
 
-Item {
+QtObject {
     id: root
     property var pluginService: null
     property string pluginId: "" 
     property string trigger: "="
     property string lastSentQuery: ""
+
+    // In a QtObject, children must be assigned to properties
+    property Connections qalcConn: Connections {
+        target: QalcService
+        function onResultReady(result) {
+            if (pluginService && pluginId) {
+                // This function only exists on OUR modified fork of DMS
+                if (typeof pluginService.requestLauncherUpdate === "function") {
+                    pluginService.requestLauncherUpdate(pluginId)
+                }
+            }
+        }
+    }
 
     Component.onCompleted: {
         if (pluginService) {
@@ -23,24 +36,12 @@ Item {
         }
     }
 
-    Connections {
-        target: QalcService
-        function onResultReady(result) {
-            if (pluginService && pluginId) {
-                // Cette fonction n'existe que sur NOTRE fork modifié de DMS
-                if (typeof pluginService.requestLauncherUpdate === "function") {
-                    pluginService.requestLauncherUpdate(pluginId)
-                }
-            }
-        }
-    }
-
     function getItems(query) {
         const q = query.trim()
         if (!q) return []
 
         try {
-            // Anti-spam : On ne recalcule que si la requête a changé
+            // Anti-spam: Only recalculate if the query has changed
             if (q !== lastSentQuery) {
                 QalcService.calculate(q)
                 lastSentQuery = q

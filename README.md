@@ -4,7 +4,7 @@ A collection of community plugins for [DankMaterialShell](https://github.com/Ave
 
 ## IMPORTANT
 Some plugins in this repository (like **Qalculate**) require specific architectural changes to DMS to support asynchronous results and persistence.
-Until these changes are merged into the official repository, please use [Philippe's Fork](https://github.com/pcortellezzi/DankMaterialShell) (branch `feat/persistent-plugins`).
+Until these changes are merged into the official repository (see [PR#1231](https://github.com/AvengeMedia/DankMaterialShell/pull/1231)), please use [Philippe's Fork](https://github.com/pcortellezzi/DankMaterialShell).
 
 ## Installation
 

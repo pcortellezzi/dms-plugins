@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Services
 
-Item {
+QtObject {
     id: root
 
     property var pluginService: null
@@ -16,7 +16,6 @@ Item {
     }
 
     function getItems(query) {
-        // Simple filtering
         const actions = [
             {
                 name: "Lock",

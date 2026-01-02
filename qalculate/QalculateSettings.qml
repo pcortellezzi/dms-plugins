@@ -1,103 +1,57 @@
 import QtQuick
-import QtQuick.Controls
+import qs.Common
 import qs.Widgets
+import qs.Modules.Plugins
 
-FocusScope {
+PluginSettings {
     id: root
-    property var pluginService: null
+    pluginId: "qalculate"
 
-    implicitHeight: settingsColumn.implicitHeight
-    height: implicitHeight
+    StyledText {
+        width: parent.width
+        text: "Qalculate Settings"
+        font.pixelSize: Theme.fontSizeLarge
+        font.weight: Font.Bold
+        color: Theme.surfaceText
+    }
 
-    Column {
-        id: settingsColumn
-        anchors.fill: parent
-        anchors.margins: 16
-        spacing: 16
+    StyledText {
+        width: parent.width
+        text: "Calculate math expressions, unit conversions, and more using qalc."
+        font.pixelSize: Theme.fontSizeSmall
+        color: Theme.surfaceVariantText
+        wrapMode: Text.WordWrap
+    }
 
-        Text {
-            text: "Qalculate Settings"
-            font.pixelSize: 18
-            font.weight: Font.Bold
-            color: "#FFFFFF"
-        }
+    Rectangle {
+        width: parent.width
+        height: 1
+        color: Theme.outline
+        opacity: 0.3
+    }
 
-        Text {
-            text: "Calculate math expressions, unit conversions, and more using qalc."
-            font.pixelSize: 14
-            color: "#CCFFFFFF"
-            wrapMode: Text.WordWrap
-            width: parent.width - 32
-        }
-
-        Rectangle {
-            width: parent.width - 32
-            height: 1
-            color: "#30FFFFFF"
-        }
-
-        Column {
-            spacing: 12
-            width: parent.width - 32
-
-            Text {
-                text: "Trigger Configuration"
-                font.pixelSize: 16
-                font.weight: Font.Medium
-                color: "#FFFFFF"
-            }
-
-            Row {
-                spacing: 12
-                CheckBox {
-                    id: noTriggerToggle
-                    text: "No trigger (always active)"
-                    checked: loadSettings("noTrigger", false)
-                    onCheckedChanged: {
-                        saveSettings("noTrigger", checked)
-                        if (checked) saveSettings("trigger", "")
-                        else saveSettings("trigger", triggerField.text || "=")
-                    }
-                    contentItem: Text {
-                        text: noTriggerToggle.text
-                        color: "#FFFFFF"
-                        leftPadding: noTriggerToggle.indicator.width + 8
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
-            }
-
-            Row {
-                spacing: 12
-                visible: !noTriggerToggle.checked
-                Text {
-                    text: "Trigger:"
-                    color: "#FFFFFF"
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-                DankTextField {
-                    id: triggerField
-                    width: 100
-                    height: 40
-                    text: loadSettings("trigger", "=")
-                    placeholderText: "="
-                    backgroundColor: "#30FFFFFF"
-                    textColor: "#FFFFFF"
-                    onTextEdited: {
-                        saveSettings("trigger", text.trim() || "=")
-                        saveSettings("noTrigger", text.trim() === "")
-                    }
-                }
+    ToggleSetting {
+        id: noTriggerToggle
+        settingKey: "noTrigger"
+        label: "Always Active"
+        description: noTriggerToggle.value ? "Qalculate is always active. Simply type expressions in the launcher." : "Use a trigger prefix to activate the calculator."
+        defaultValue: false
+        onValueChanged: {
+            if (value) {
+                root.saveValue("trigger", "");
+            } else {
+                root.saveValue("trigger", triggerSetting.value || "=");
             }
         }
     }
 
-    function saveSettings(key, value) {
-        if (pluginService) pluginService.savePluginData("qalculate", key, value)
-    }
-
-    function loadSettings(key, defaultValue) {
-        if (pluginService) return pluginService.loadPluginData("qalculate", key, defaultValue)
-        return defaultValue
+    StringSetting {
+        id: triggerSetting
+        visible: !noTriggerToggle.value
+        settingKey: "trigger"
+        label: "Trigger"
+        description: "Prefix character(s) to activate the calculator (default: =)"
+        placeholder: "="
+        defaultValue: "="
     }
 }

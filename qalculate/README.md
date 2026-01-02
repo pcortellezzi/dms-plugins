@@ -9,7 +9,7 @@ Integrated calculator using the powerful `qalc` (libqalculate) engine.
 
 ## Requirements
 - **libqalculate**: The `qalc` binary must be installed on your system.
-- **Async Support**: This plugin requires a modified version of DMS to display results instantly as you type. Please use [Philippe's DMS Fork](https://github.com/pcortellezzi/DankMaterialShell) until the feature is merged upstream.
+- **Async Support**: This plugin requires specific architectural changes to DMS to display results instantly as you type. Please use [Philippe's DMS Fork](https://github.com/pcortellezzi/DankMaterialShell) until these changes are merged upstream (see [PR#1231](https://github.com/AvengeMedia/DankMaterialShell/pull/1231)).
 
 ## Installation
 
